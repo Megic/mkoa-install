@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Mkoa 简易模块安装</title>
+    <link href="http://cdn.bootcss.com/normalize/3.0.3/normalize.min.css" rel="stylesheet">
+    <script src="http://cdn.bootcss.com/jquery/2.2.1/jquery.min.js"></script>
+    <script src="http://cdn.bootcss.com/avalon.js/1.5.5/avalon.min.js"></script>
+    <style>
+        *{
+            padding: 0;
+            margin: 0;}
+        body{
+            font-family: '微软雅黑';
+            text-align: center;
+        }
+h1{
+    font-size: 16px;
+    display: block;
+    text-align: center;
+    line-height: 50px;}
+        .list{
+            font-size: 14px;
+            width:600px;
+            min-height: 38px;
+            position: relative;
+            margin: 0 auto;
+            margin-bottom: 5px;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border: 1px solid #ddd;
+            text-align: left;}
+        .list p{
+            line-height: 20px;
+            color: #999;}
+        .list h3{
+            font-size: 14px;}
+        .list h3 span{
+            font-size: 12px;
+            font-weight: normal;
+            display: inline-block;
+            margin-left: 10px;
+            color: #666;}
+        button{
+            display: inline-block;
+            line-height: 30px;
+            padding-left: 10px;cursor: default;
+            padding-right: 10px;
+            color: #999;
+            border: none;}
+        button.active{
+            background-color: #0099ff;
+            color: #fff;cursor: pointer;
+        }
+        button.active:hover{
+            background-color: #0066cc;}
+        .right-button{
+            position: absolute;
+            right: 10px;
+            text-align: right;
+            top:15px;
+            width: 150px;}
+        .left-bd{
+            margin-right: 160px;}
+        .tips{
+            display: inline-block;
+            line-height: 30px;
+            font-size: 12px;
+            color: #666;}
+        p.dependencies{
+            color: #444;
+            font-size: 14px;
+            line-height: 25px;}
+    </style>
+    <script>
+        var vm=avalon.define({
+            $id:'app',
+            list:[],
+            install:function(el){//安装命令
+                if(el.type==2) {
+                    el.type=22;
+                    $.post('./main/install', {folder: el.folder}, function (data) {
+                        if (!data.error) {
+                            el.type = 1;
+                        }else{
+                            el.type = 2;
+                            alert(data.error);
+                        }
+                    })
+                }
+            },
+            uninstall:function(el){//卸载命令
+                if(el.type==1) {
+                    el.type=21;
+                    $.post('./main/uninstall', {folder: el.folder}, function (data) {
+                        if (!data.error) {
+                            el.type = 2;
+                        }else{
+                            el.type = 1;
+                            alert(data.error);
+                        }
+                    })
+                }
+            }
+        });
+        $.getJSON('./main/list?'+new Date().getTime(),function(data){
+            vm.list.pushArray(data);
+            vm.list.sort(function(a,b){
+                return a.type< b.type;
+            });
+        })
+    </script>
+</head>
+<body>
+<h1>MKOA 简易模块安装</h1>
+<p class="tips">注意:卸载模块有可能影响依赖其的模块</p>
+<div ms-controller="app">
+<div class="list" ms-repeat="list">
+    <div class="left-bd">
+        <h3>{{el.name}}<span>[{{el.folder}}]</span> <span>{{el.author?'作者：'+el.author:'无特别说明'}}</span></h3>
+        <p class="dependencies">依赖：{{el.dependencies?el.dependencies.join('|'):'无相关依赖'}}</p>
+        <p>{{el.description}}</p>
+    </div>
+    <div class="right-button" ms-if="el.type">
+        <button ms-class="active:el.type==2" ms-click="install(el)">{{el.type==22?'正在安装...':'安装'}}</button>
+        <button ms-click="uninstall(el)" ms-class="active:el.type==1">{{el.type==21?'正在卸载...':'卸载'}}</button>
+    </div>
+</div>
+</div>
+</body>
+</html>
