@@ -11,10 +11,11 @@ module.exports = function ($this) {
     main['_after'] = function *() {//后行的公共函数
         //console.log('公共头部');
     };
- main['test']=function *(){
-
-    console.log($D('config').drag())
- };
+     //main['shell']=function *(){//执行shell
+     //    var cprocess = require('child_process');
+     //    cprocess.execSync($this.POST['code'],{cwd:$C.ROOT});//设置安装源
+     //    $this.success();
+     //};
     //****************************
     main['list'] = function *() {
         var moudelList = fs.readdirSync($C.application);
@@ -73,6 +74,7 @@ module.exports = function ($this) {
             $this.error('需先安装依赖:'+uninstallMoudel.join('、'));
         }else {
             if (config.type == 2) {//可安装
+                //安装模型，生成数据表
                 if (fs.existsSync(modelPath)) {//存在模型文件
                     var models = fs.readdirSync(modelPath);
                     var makArr = [];
@@ -83,6 +85,14 @@ module.exports = function ($this) {
                     });
                     yield makArr;//执行并发
                 }
+                //判断是否需要安装依赖包
+                if(fs.existsSync(appPath+'/package.json')) {//如果存在依赖模块
+                    var cprocess = require('child_process');
+                    cprocess.execSync('npm config set registry http://registry.npm.taobao.org/',{cwd: appPath + '/'});//设置安装源
+                    cprocess.execSync('npm install',{cwd: appPath + '/'});//执行npm安装
+                }
+
+                //执行额外的sql文件
                 if (!config.installFile)config.installFile = 'install.sql';//默认执行文件
                 var sqlPath = appPath + '/install/' + config.installFile;//安装文件
                 if (fs.existsSync(sqlPath)) {//存在数据库安装文件,执行sql安装
@@ -131,6 +141,12 @@ module.exports = function ($this) {
             });
             yield makArr;//执行并发
         }
+            //判断是否需要安装依赖包
+            if(fs.existsSync(appPath+'/package.json')) {//如果存在依赖模块
+                var cprocess = require('child_process');
+                cprocess.execSync('rm -rf node_modules',{cwd: appPath + '/'});//删除依赖文件夹
+            }
+
         if(!config.uninstallFile)config.uninstallFile='uninstall.sql';//默认执行文件
         var sqlPath=appPath+'/install/'+config.uninstallFile;//卸载文件
         if(fs.existsSync(sqlPath)) {//存在数据库文件,执行sql
