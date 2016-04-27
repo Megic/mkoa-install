@@ -8,6 +8,8 @@
 
 需要额外安装卸载的Mkoa模块，可以在模块增加install/config.json文件夹/文件
 config.json配置字段
+
+带有数据模型或者npm依赖的模块即便没有install/config.json,系统会自动生成
 ```js
 {
 name:'模块名称',
