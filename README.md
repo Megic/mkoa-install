@@ -24,6 +24,6 @@ installFile:'install.sql',安装执行的sql文件，与config.json统一目录
 uninstallFile:'uninstall.sql'
 }
 ```
-安装卸载sql文件支持变量[$prefix]执行时将统一替换成配置的数据表前缀
+安装卸载sql文件支持变量[$prefix]，执行时将统一替换成配置的数据表前缀
 
 
