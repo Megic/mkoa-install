@@ -28,7 +28,7 @@ module.exports = function ($this) {
             }else{
                 config={
                     name:item,
-                    type:fs.existsSync($C.ROOT+'/'+$C.application+'/'+item+'/models/')?2:0  //存在模型文件夹标记为需安装
+                    type:fs.existsSync($C.ROOT+'/'+$C.application+'/'+item+'/models/')||fs.existsSync($C.ROOT+'/'+$C.application+'/'+item+'/package.json')?2:0  //存在模型文件夹标记为需安装
                 }
             }
             config.folder=item;
