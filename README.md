@@ -26,4 +26,6 @@ uninstallFile:'uninstall.sql'
 ```
 安装卸载sql文件支持变量[$prefix]，执行时将统一替换成配置的数据表前缀
 
+> 部分GBK编码的系统需要把默认编码设置为utf8，window下 运行CMD 输入CHCP 65001，回车；
+
 
