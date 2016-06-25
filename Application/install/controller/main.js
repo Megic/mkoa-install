@@ -4,18 +4,18 @@
 module.exports = function ($this) {
     var main = {};
     var fs=require('fs'),
-    fscp = require('co-fs-plus');//文件夹等操作
+        fscp = require('co-fs-plus');//文件夹等操作
     main['_init'] = function *() {//先执行的公共函数
         //console.log('公共头部');
     };
     main['_after'] = function *() {//后行的公共函数
         //console.log('公共头部');
     };
-     //main['shell']=function *(){//执行shell
-     //    var cprocess = require('child_process');
-     //    cprocess.execSync($this.POST['code'],{cwd:$C.ROOT});//设置安装源
-     //    $this.success();
-     //};
+    //main['shell']=function *(){//执行shell
+    //    var cprocess = require('child_process');
+    //    cprocess.execSync($this.POST['code'],{cwd:$C.ROOT});//设置安装源
+    //    $this.success();
+    //};
     //****************************
     main['list'] = function *() {
         var moudelList = fs.readdirSync($C.application);
@@ -28,7 +28,7 @@ module.exports = function ($this) {
             }else{
                 config={
                     name:item,
-                    type:fs.existsSync($C.ROOT+'/'+$C.application+'/'+item+'/models/')||fs.existsSync($C.ROOT+'/'+$C.application+'/'+item+'/package.json')?2:0  //存在模型文件夹标记为需安装
+                    type:fs.existsSync($C.ROOT+'/'+$C.application+'/'+item+'/models/')?2:0  //存在模型文件夹标记为需安装
                 }
             }
             config.folder=item;
@@ -86,9 +86,9 @@ module.exports = function ($this) {
                     yield makArr;//执行并发
                 }
                 //判断是否需要安装依赖包
-                if(fs.existsSync(appPath+'/package.json')) {//如果存在依赖模块
+                if(fs.existsSync(appPath+'/config.json')) {//如果存在依赖模块
                     var cprocess = require('child_process');
-                    cprocess.execSync('npm config set registry http://registry.npm.taobao.org/',{cwd: appPath + '/'});//设置安装源
+                    cprocess.execSync('npm lib set registry http://registry.npm.taobao.org/',{cwd: appPath + '/'});//设置安装源
                     cprocess.execSync('npm install',{cwd: appPath + '/'});//执行npm安装
                 }
 
@@ -128,36 +128,36 @@ module.exports = function ($this) {
             }
         }
         if(config.type==1){
-        if(fs.existsSync(modelPath)) {//存在模型文件
-            var models = fs.readdirSync(modelPath);
-            var makArr=[];
-            models.forEach(function(item){//循环
-                var nameArr=item.split('.');
-                var modelName=nameArr[0];
-                var tableNmae=$D(modelName).getTableName();//数据表名
-                $SYS.modelPath[tableNmae]=null;
-                delete  $SYS.modelPath[tableNmae];//删除内存模型记录
-                makArr.push($SYS.sequelize.query('drop table "'+tableNmae+'";'));//删除数据表语句
-            });
-            yield makArr;//执行并发
-        }
+            if(fs.existsSync(modelPath)) {//存在模型文件
+                var models = fs.readdirSync(modelPath);
+                var makArr=[];
+                models.forEach(function(item){//循环
+                    var nameArr=item.split('.');
+                    var modelName=nameArr[0];
+                    var tableNmae=$D(modelName).getTableName();//数据表名
+                    $SYS.modelPath[tableNmae]=null;
+                    delete  $SYS.modelPath[tableNmae];//删除内存模型记录
+                    makArr.push($SYS.sequelize.query('drop table "'+tableNmae+'";'));//删除数据表语句
+                });
+                yield makArr;//执行并发
+            }
             //判断是否需要安装依赖包
-            if(fs.existsSync(appPath+'/package.json')) {//如果存在依赖模块
+            if(fs.existsSync(appPath+'/config.json')) {//如果存在依赖模块
                 var cprocess = require('child_process');
                 cprocess.execSync('rm -rf node_modules',{cwd: appPath + '/'});//删除依赖文件夹
             }
 
-        if(!config.uninstallFile)config.uninstallFile='uninstall.sql';//默认执行文件
-        var sqlPath=appPath+'/install/'+config.uninstallFile;//卸载文件
-        if(fs.existsSync(sqlPath)) {//存在数据库文件,执行sql
-            var sql = fs.readFileSync(sqlPath).toString();
-            sql = replaceFix(sql);//替换数据前缀
-            yield $SYS.sequelize.query(sql);//执行操作
-        }
-        config.type=2;//修改记录状态
-        if (fs.existsSync(installPath) || (yield fscp.mkdirp(installPath, '0755'))) {//判定文件夹是否存在
-            fs.writeFileSync(configFile,JSON.stringify(config));//修改配置文件
-        }
+            if(!config.uninstallFile)config.uninstallFile='uninstall.sql';//默认执行文件
+            var sqlPath=appPath+'/install/'+config.uninstallFile;//卸载文件
+            if(fs.existsSync(sqlPath)) {//存在数据库文件,执行sql
+                var sql = fs.readFileSync(sqlPath).toString();
+                sql = replaceFix(sql);//替换数据前缀
+                yield $SYS.sequelize.query(sql);//执行操作
+            }
+            config.type=2;//修改记录状态
+            if (fs.existsSync(installPath) || (yield fscp.mkdirp(installPath, '0755'))) {//判定文件夹是否存在
+                fs.writeFileSync(configFile,JSON.stringify(config));//修改配置文件
+            }
 
             $this.success();
         }else{
@@ -167,11 +167,11 @@ module.exports = function ($this) {
 
 
     function replaceFix(sql){
-        var prefix='';
-        switch($C.sqlType){
-            case 1: prefix=$C.mysql.prefix;break;
-            case 2: prefix=$C.pgsql.prefix;break;
-        }
+        var prefix=$C.prefix;
+        //switch($C.sqlType){
+        //    case 1: prefix=$C.mysql.prefix;break;
+        //    case 2: prefix=$C.pgsql.prefix;break;
+        //}
         sql=sql.replace(/\[\$prefix\]/g,prefix);//替换数据前缀
         return sql;
     }
