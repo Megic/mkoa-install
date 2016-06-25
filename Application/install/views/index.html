@@ -87,6 +87,7 @@ h1{
         var vm=avalon.define({
             $id:'app',
             list:[],
+            change:1,
             code:'pm2 restart',
             send:function(){//发送命令
             if(shellLock){
@@ -104,7 +105,7 @@ h1{
             install:function(el){//安装命令
                 if(el.type==2) {
                     el.type=22;
-                    $.post('./main/install', {folder: el.folder}, function (data) {
+                    $.post('./main/install', {folder: el.folder,change:vm.change}, function (data) {
                         if (!data.error) {
                             el.type = 1;
                         }else{
@@ -117,7 +118,7 @@ h1{
             uninstall:function(el){//卸载命令
                 if(el.type==1) {
                     el.type=21;
-                    $.post('./main/uninstall', {folder: el.folder}, function (data) {
+                    $.post('./main/uninstall', {folder: el.folder,change:vm.change}, function (data) {
                         if (!data.error) {
                             el.type = 2;
                         }else{
@@ -143,6 +144,13 @@ h1{
 <!--<div class="cmd"><input type="text" id="cmd" ms-duplex="code"/><button ms-click="send">执行命令</button></div>-->
 <p class="tips">包含中间件的模块，安装/卸载后需要重启服务</p>
 <p class="tips">注意:卸载模块有可能影响依赖其的模块</p>
+    <div class="cmd">
+        <select ms-duplex="change">
+            <option value="1">执行所有步骤</option>
+            <option value="0">跳过数据表生成卸载步骤</option>
+        </select>
+        如果数据库通过其他方法导入，可只安装依赖
+    </div>
 
 <div class="list" ms-repeat="list">
     <div class="left-bd">

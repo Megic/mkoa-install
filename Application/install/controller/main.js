@@ -28,7 +28,7 @@ module.exports = function ($this) {
             }else{
                 config={
                     name:item,
-                    type:fs.existsSync($C.ROOT+'/'+$C.application+'/'+item+'/models/')?2:0  //存在模型文件夹标记为需安装
+                    type:fs.existsSync($C.ROOT+'/'+$C.application+'/'+item+'/models/')||fs.existsSync($C.ROOT+'/'+$C.application+'/'+item+'/package.json')?2:0  //存在模型文件夹标记为需安装
                 }
             }
             config.folder=item;
@@ -75,7 +75,7 @@ module.exports = function ($this) {
         }else {
             if (config.type == 2) {//可安装
                 //安装模型，生成数据表
-                if (fs.existsSync(modelPath)) {//存在模型文件
+                if (fs.existsSync(modelPath)&&$this.POST['change']==1) {//存在模型文件
                     var models = fs.readdirSync(modelPath);
                     var makArr = [];
                     models.forEach(function (item) {//循环
@@ -86,9 +86,9 @@ module.exports = function ($this) {
                     yield makArr;//执行并发
                 }
                 //判断是否需要安装依赖包
-                if(fs.existsSync(appPath+'/config.json')) {//如果存在依赖模块
+                if(fs.existsSync(appPath+'/package.json')) {//如果存在依赖模块
                     var cprocess = require('child_process');
-                    cprocess.execSync('npm lib set registry http://registry.npm.taobao.org/',{cwd: appPath + '/'});//设置安装源
+                    cprocess.execSync('npm config set registry http://registry.npm.taobao.org/',{cwd: appPath + '/'});//设置安装源
                     cprocess.execSync('npm install',{cwd: appPath + '/'});//执行npm安装
                 }
 
@@ -128,7 +128,7 @@ module.exports = function ($this) {
             }
         }
         if(config.type==1){
-            if(fs.existsSync(modelPath)) {//存在模型文件
+            if(fs.existsSync(modelPath)&&$this.POST['change']==1) {//存在模型文件
                 var models = fs.readdirSync(modelPath);
                 var makArr=[];
                 models.forEach(function(item){//循环
@@ -142,7 +142,7 @@ module.exports = function ($this) {
                 yield makArr;//执行并发
             }
             //判断是否需要安装依赖包
-            if(fs.existsSync(appPath+'/config.json')) {//如果存在依赖模块
+            if(fs.existsSync(appPath+'/package.json')) {//如果存在依赖模块
                 var cprocess = require('child_process');
                 cprocess.execSync('rm -rf node_modules',{cwd: appPath + '/'});//删除依赖文件夹
             }
